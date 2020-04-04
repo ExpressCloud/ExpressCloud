@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+	<appender name="Queen" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>[%d{HH:mm:ss} %level]: %msg%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="Async" class="ch.qos.logback.classic.AsyncAppender">
+		<appender-ref ref="Queen"/>
+	</appender>
+	<appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>logs/latest.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>logs/%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>2GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%t/%level]: %msg%n</pattern>
+		</encoder>
+	</appender>
+	<root level="info">
+		<appender-ref ref="File"/>
+		<appender-ref ref="Queen"/>
+<!--		<appender-ref ref="Async"/>-->
+	</root>
+<!--	<logger name="org.mongodb.driver" level="off">-->
+<!--		<appender-ref ref="Queen"/>-->
+<!--&lt;!&ndash;		<appender-ref ref="Async"/>&ndash;&gt;-->
+<!--	</logger>-->
+<!--	<logger name="com.github.dockerjava" level="off">-->
+<!--		<appender-ref ref="Queen"/>-->
+<!--&lt;!&ndash;		<appender-ref ref="Async"/>&ndash;&gt;-->
+<!--	</logger>-->
+<!--	<logger name="io.netty" level="info">-->
+<!--		<appender-ref ref="Queen"/>-->
+<!--&lt;!&ndash;		<appender-ref ref="Async"/>&ndash;&gt;-->
+<!--	</logger>-->
+</configuration>
