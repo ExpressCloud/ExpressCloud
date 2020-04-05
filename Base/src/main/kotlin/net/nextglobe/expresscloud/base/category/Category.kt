@@ -4,8 +4,8 @@ import net.nextglobe.expresscloud.api.category.Category
 import net.nextglobe.expresscloud.api.category.CategoryPaths
 import net.nextglobe.expresscloud.base.category.loadbalancing.LoadBalancersManager
 import net.nextglobe.expresscloud.base.category.loadbalancing.LoadBalancingStrategy
-import net.nextglobe.expresscloud.base.database.models.DatabaseCategory
 import net.nextglobe.expresscloud.base.server.Server
+import net.nextglobe.expresscloud.db.models.DatabaseCategory
 import java.util.*
 import kotlin.math.floor
 
