@@ -9,5 +9,6 @@ data class DatabaseCloudConfig(
     @Serializable(with = UUIDSerializer::class)
     val uuid: UUID,
     val name: String,
+    val active: Boolean,
     val cloudManagerImplementation: String
 )
