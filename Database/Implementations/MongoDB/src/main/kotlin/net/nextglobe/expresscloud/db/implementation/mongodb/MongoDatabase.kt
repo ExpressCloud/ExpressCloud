@@ -26,7 +26,7 @@ class MongoDatabase : Database {
         this.client = KMongo.createClient(connectionString).coroutine
         this.database = client.getDatabase(database)
 
-        this.databaseCloudConfigsCollection = this.database.getCollection("databaseConfigs")
+        this.databaseCloudConfigsCollection = this.database.getCollection("databaseCloudConfigs")
         this.databaseCategoriesCollection = this.database.getCollection("databaseCategories")
     }
 
