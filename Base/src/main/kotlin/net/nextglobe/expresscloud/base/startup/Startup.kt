@@ -8,6 +8,7 @@ import net.nextglobe.expresscloud.base.config.DatabaseConnectionConfig
 import net.nextglobe.expresscloud.cm.CloudManager
 import net.nextglobe.expresscloud.config.FileConfiguration
 import net.nextglobe.expresscloud.db.Database
+import net.nextglobe.expresscloud.db.models.DatabaseCloudConfig
 import java.nio.file.Paths
 
 object Startup {
@@ -35,8 +36,8 @@ object Startup {
         return database
     }
 
-    fun initializeCloudManager(database: Database) : CloudManager {
-        val cloudManager = CloudManagerStartup.initializeCloudManager()
+    fun initializeCloudManager(cloudConfig: DatabaseCloudConfig) : CloudManager {
+        val cloudManager = CloudManagerStartup.initializeCloudManager(cloudConfig)
         CloudManagerStartup.connectToCloudManager(cloudManager)
         CloudManagerStartup.registerCloudManagerListeners(cloudManager)
         return cloudManager

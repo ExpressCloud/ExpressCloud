@@ -1,5 +1,6 @@
 package net.nextglobe.expresscloud.base
 
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import net.nextglobe.expresscloud.api.exception.CloudException
 import net.nextglobe.expresscloud.api.exception.cloudmanager.CloudManagerException
@@ -7,6 +8,7 @@ import net.nextglobe.expresscloud.base.manager.ServerManager
 import net.nextglobe.expresscloud.base.startup.Startup
 import net.nextglobe.expresscloud.cm.CloudManager
 import net.nextglobe.expresscloud.db.Database
+import net.nextglobe.expresscloud.db.models.DatabaseCloudConfig
 
 val logger = KotlinLogging.logger {}
 
@@ -42,11 +44,12 @@ object Cloud {
 
     var state = CloudState.WAITING_FOR_START
 
-    fun start() {
+    fun start() = runBlocking {
         if(state == CloudState.WAITING_FOR_START) {
             val config = Startup.loadConfig()
             val database = Startup.initializeDatabase(config)
-            cloudManager = Startup.initializeCloudManager(database)
+            val databaseCloudConfig = DatabaseCloudConfig.getActiveDatabaseCloudConfigStrict(database.getDatabaseCloudConfigs())
+            cloudManager = Startup.initializeCloudManager(databaseCloudConfig)
             state = CloudState.STARTED
         } else {
             throw CloudException("Cloud has already been started")
