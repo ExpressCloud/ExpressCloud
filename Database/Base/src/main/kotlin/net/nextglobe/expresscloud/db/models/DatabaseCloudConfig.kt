@@ -13,7 +13,8 @@ data class DatabaseCloudConfig(
     val uuid: UUID,
     val name: String,
     val active: Boolean,
-    val cloudManagerImplementation: String
+    val cloudManagerImplementation: String,
+    val cloudManagerConnectionString: String?
 ) {
     companion object {
         fun getActiveDatabaseCloudConfig(cloudConfigs: List<DatabaseCloudConfig>) : DatabaseCloudConfig? {
