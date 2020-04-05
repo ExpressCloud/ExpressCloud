@@ -18,7 +18,7 @@ object CloudManagerStartup {
         } else {
             throw CloudManagerException("Cloud manager implementation does not exist") // TODO replace with fallback?
         }
-        net.nextglobe.expresscloud.base.logger.info { "Initialized cloud manager implementation!" }
+        logger.info { "Initialized cloud manager implementation!" }
         return cloudManager
     }
 
