@@ -38,7 +38,8 @@ object Startup {
 
     fun initializeCloudManager(cloudConfig: DatabaseCloudConfig) : CloudManager {
         val cloudManager = CloudManagerStartup.initializeCloudManager(cloudConfig)
-        CloudManagerStartup.connectToCloudManager(cloudManager)
+        if(cloudManager.needsConnection)
+            CloudManagerStartup.connectToCloudManager(cloudManager, cloudConfig)
         CloudManagerStartup.registerCloudManagerListeners(cloudManager)
         return cloudManager
     }
