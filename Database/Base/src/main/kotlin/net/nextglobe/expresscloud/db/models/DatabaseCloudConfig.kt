@@ -3,6 +3,8 @@ package net.nextglobe.expresscloud.db.models
 import kotlinx.serialization.Serializable
 import net.nextglobe.expresscloud.api.exception.CloudException
 import net.nextglobe.expresscloud.db.UUIDSerializer
+import net.nextglobe.expresscloud.db.exception.NoActiveDatabaseCloudConfigsException
+import net.nextglobe.expresscloud.db.exception.TooManyActiveDatabaseCloudConfigsException
 import java.util.UUID
 
 @Serializable
@@ -21,9 +23,9 @@ data class DatabaseCloudConfig(
         fun getActiveDatabaseCloudConfigStrict(cloudConfigs: List<DatabaseCloudConfig>) : DatabaseCloudConfig {
             val activeDatabaseCloudConfigs = cloudConfigs.filter { it.active }
             if(activeDatabaseCloudConfigs.size > 1)
-                throw CloudException("More than one database cloud configs are active. Only one config can be active at a time")
+                throw TooManyActiveDatabaseCloudConfigsException()
             else if(activeDatabaseCloudConfigs.isEmpty())
-                throw CloudException("No database cloud config is active. Exactly one config must be active at a time")
+                throw NoActiveDatabaseCloudConfigsException()
             return activeDatabaseCloudConfigs.first()
         }
     }
