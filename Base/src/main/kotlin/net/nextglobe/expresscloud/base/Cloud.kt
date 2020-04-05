@@ -52,7 +52,7 @@ object Cloud {
             val databaseCloudConfig: DatabaseCloudConfig
             database.getDatabaseCloudConfigs().let { // Get active DatabaseCloudConfig or create a default one if no configs exist
                 if(it.isEmpty()) {
-                    databaseCloudConfig = DatabaseCloudConfig(UUID.randomUUID(), "default", true, "DOCKER")
+                    databaseCloudConfig = DatabaseCloudConfig(UUID.randomUUID(), "default", true, "DOCKER", "tcp://localhost:2375")
                     database.insertDatabaseCloudConfig(databaseCloudConfig)
                 } else {
                     databaseCloudConfig = DatabaseCloudConfig.getActiveDatabaseCloudConfigStrict(it)
