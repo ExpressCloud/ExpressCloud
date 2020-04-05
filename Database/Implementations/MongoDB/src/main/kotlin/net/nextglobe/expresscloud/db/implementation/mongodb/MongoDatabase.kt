@@ -3,7 +3,7 @@ package net.nextglobe.expresscloud.db.implementation.mongodb
 import com.google.common.net.PercentEscaper
 import net.nextglobe.expresscloud.db.Database
 import net.nextglobe.expresscloud.db.models.DatabaseCategory
-import net.nextglobe.expresscloud.db.models.DatabaseConfig
+import net.nextglobe.expresscloud.db.models.DatabaseCloudConfig
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -19,14 +19,14 @@ class MongoDatabase : Database {
     private lateinit var client: CoroutineClient
     private lateinit var database: CoroutineDatabase
 
-    private lateinit var databaseConfigsCollection: CoroutineCollection<DatabaseConfig>
+    private lateinit var databaseCloudConfigsCollection: CoroutineCollection<DatabaseCloudConfig>
     private lateinit var databaseCategoriesCollection: CoroutineCollection<DatabaseCategory>
 
     override fun connect(connectionString: String, database: String) {
         this.client = KMongo.createClient(connectionString).coroutine
         this.database = client.getDatabase(database)
 
-        this.databaseConfigsCollection = this.database.getCollection("databaseConfigs")
+        this.databaseCloudConfigsCollection = this.database.getCollection("databaseConfigs")
         this.databaseCategoriesCollection = this.database.getCollection("databaseCategories")
     }
 
@@ -59,20 +59,20 @@ class MongoDatabase : Database {
             append("/$authenticationDatabase")
     }
 
-    override suspend fun getDatabaseConfigs(): List<DatabaseConfig> {
-        return databaseConfigsCollection.find().toList()
+    override suspend fun getDatabaseCloudConfigs(): List<DatabaseCloudConfig> {
+        return databaseCloudConfigsCollection.find().toList()
     }
 
-    override suspend fun getDatabaseConfig(uuid: UUID): DatabaseConfig? {
-        return databaseConfigsCollection.find(DatabaseConfig::uuid eq uuid).first()
+    override suspend fun getDatabaseCloudConfig(uuid: UUID): DatabaseCloudConfig? {
+        return databaseCloudConfigsCollection.find(DatabaseCloudConfig::uuid eq uuid).first()
     }
 
-    override suspend fun insertDatabaseConfig(config: DatabaseConfig) {
-        databaseConfigsCollection.insertOne(config)
+    override suspend fun insertDatabaseCloudConfig(cloudConfig: DatabaseCloudConfig) {
+        databaseCloudConfigsCollection.insertOne(cloudConfig)
     }
 
-    override suspend fun updateDatabaseConfig(config: DatabaseConfig) {
-        databaseConfigsCollection.updateOne(DatabaseConfig::uuid eq config.uuid, config)
+    override suspend fun updateDatabaseCloudConfig(cloudConfig: DatabaseCloudConfig) {
+        databaseCloudConfigsCollection.updateOne(DatabaseCloudConfig::uuid eq cloudConfig.uuid, cloudConfig)
     }
 
     override suspend fun getDatabaseCategories(): List<DatabaseCategory> {
@@ -88,7 +88,7 @@ class MongoDatabase : Database {
     }
 
     override suspend fun updateDatabaseCategory(category: DatabaseCategory) {
-        databaseCategoriesCollection.updateOne(DatabaseConfig::uuid eq category.uuid, category)
+        databaseCategoriesCollection.updateOne(DatabaseCloudConfig::uuid eq category.uuid, category)
     }
 
 }

@@ -1,7 +1,7 @@
 package net.nextglobe.expresscloud.db
 
 import net.nextglobe.expresscloud.db.models.DatabaseCategory
-import net.nextglobe.expresscloud.db.models.DatabaseConfig
+import net.nextglobe.expresscloud.db.models.DatabaseCloudConfig
 import java.util.UUID
 
 interface Database {
@@ -10,13 +10,13 @@ interface Database {
 
     fun buildConnectionString(username: String?, password: String?, hostname: String?, port: Int?, authenticationDatabase: String?) : String
 
-    suspend fun getDatabaseConfigs(): List<DatabaseConfig>
+    suspend fun getDatabaseCloudConfigs(): List<DatabaseCloudConfig>
 
-    suspend fun getDatabaseConfig(uuid: UUID): DatabaseConfig?
+    suspend fun getDatabaseCloudConfig(uuid: UUID): DatabaseCloudConfig?
 
-    suspend fun insertDatabaseConfig(config: DatabaseConfig)
+    suspend fun insertDatabaseCloudConfig(cloudConfig: DatabaseCloudConfig)
 
-    suspend fun updateDatabaseConfig(config: DatabaseConfig)
+    suspend fun updateDatabaseCloudConfig(cloudConfig: DatabaseCloudConfig)
 
     suspend fun getDatabaseCategories(): List<DatabaseCategory>
 
