@@ -6,6 +6,7 @@ import java.util.UUID
 interface CloudManager {
 
     val implementationName: String
+    val needsConnection: Boolean
 
     /**
      * Optionally connect to the management solution (for example Docker). This function is called

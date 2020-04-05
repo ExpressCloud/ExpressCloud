@@ -23,6 +23,7 @@ class DockerCloudManager : CloudManager {
     private lateinit var dockerClient: DockerClient
 
     override val implementationName: String = "Docker"
+    override val needsConnection: Boolean = true
 
     override fun connect(connectionString: String) {
         logger.info { "Connecting to \"$connectionString\" without TLS..." }
