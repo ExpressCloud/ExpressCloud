@@ -23,11 +23,10 @@ object CloudManagerStartup {
         return cloudManager
     }
 
-    fun connectToCloudManager(cloudManager: CloudManager) {
+    fun connectToCloudManager(cloudManager: CloudManager, cloudConfig: DatabaseCloudConfig) {
         logger.info { "Connecting to cloud manager..." }
-        val conStringImpl = "tcp://localhost:2375" // TODO load from config
         try {
-            cloudManager.connect(conStringImpl)
+            cloudManager.connect(cloudConfig.cloudManagerConnectionString ?: throw CloudManagerException("The cloud manager connection string was null. The selected implementation needs a connection and therefore a connection string"))
         } catch (e: Exception) {
             throw CloudManagerException("An error occurred during connecting to the cloud manager!", e)
         }
