@@ -13,8 +13,4 @@ data class DatabaseCategory(
     val paths: CategoryPaths,
     val ram: Int,
     val loadBalancingStrategy: String?
-) {
-//    fun toCategory(): Category {
-//        return Category(ram, LoadBalancersManager.get(loadBalancingStrategy)!!, name, paths)
-//    }
-}
+)
