@@ -9,6 +9,7 @@ import net.nextglobe.expresscloud.base.startup.Startup
 import net.nextglobe.expresscloud.cm.CloudManager
 import net.nextglobe.expresscloud.db.Database
 import net.nextglobe.expresscloud.db.models.DatabaseCloudConfig
+import java.util.*
 
 val logger = KotlinLogging.logger {}
 
@@ -48,7 +49,15 @@ object Cloud {
         if(state == CloudState.WAITING_FOR_START) {
             val config = Startup.loadConfig()
             val database = Startup.initializeDatabase(config)
-            val databaseCloudConfig = DatabaseCloudConfig.getActiveDatabaseCloudConfigStrict(database.getDatabaseCloudConfigs())
+            val databaseCloudConfig: DatabaseCloudConfig
+            database.getDatabaseCloudConfigs().let { // Get active DatabaseCloudConfig or create a default one if no configs exist
+                if(it.isEmpty()) {
+                    databaseCloudConfig = DatabaseCloudConfig(UUID.randomUUID(), "default", true, "DOCKER")
+                    database.insertDatabaseCloudConfig(databaseCloudConfig)
+                } else {
+                    databaseCloudConfig = DatabaseCloudConfig.getActiveDatabaseCloudConfigStrict(it)
+                }
+            }
             cloudManager = Startup.initializeCloudManager(databaseCloudConfig)
             state = CloudState.STARTED
         } else {
