@@ -183,7 +183,9 @@ class DockerCloudManager : CloudManager {
     }
 
     override suspend fun startServer(server: Server): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val containerId = createServer(server)
+        dockerClient.startContainerCmd(containerId).exec()
+        return true
     }
 
     override suspend fun startServers(servers: List<Server>): Boolean {
