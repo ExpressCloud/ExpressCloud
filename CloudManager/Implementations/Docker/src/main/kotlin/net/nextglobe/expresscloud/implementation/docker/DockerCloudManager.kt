@@ -8,19 +8,34 @@ import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import net.nextglobe.expresscloud.api.category.Category
+import net.nextglobe.expresscloud.api.server.CategorizedServer
+import net.nextglobe.expresscloud.api.server.CategoryServer
 import net.nextglobe.expresscloud.api.server.Server
 import net.nextglobe.expresscloud.cm.CloudManager
+import net.nextglobe.expresscloud.implementation.docker.exception.NoImageInformationException
+import net.nextglobe.expresscloud.implementation.docker.utils.ImageUtils
+import net.nextglobe.expresscloud.implementation.docker.utils.TarUtils
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.*
 
 val logger = KotlinLogging.logger {}
 
-class DockerCloudManager : CloudManager {
+private const val NETWORK_NAME: String = "expresscloud-docker-network"
+private const val IMAGE_PREFIX: String = "expresscloud-docker-"
+private const val BASE_IMAGE_PREFIX: String = IMAGE_PREFIX + "base-"
+private const val CONTAINER_PREFIX: String = "expresscloud-"
 
-    private val NETWORK_NAME: String = "expresscloud-docker-network"
-    private val IMAGE_PREFIX: String = "expresscloud-docker-"
+class DockerCloudManager : CloudManager {
 
     private lateinit var dockerClient: DockerClient
 
@@ -70,18 +85,81 @@ class DockerCloudManager : CloudManager {
         dockerClient.close()
     }
 
-    override suspend fun prepareImage(server: Server): Boolean {
-//        if(server is CategorizedServer) {
-//            dockerClient.createImageCmd(IMAGE_PREFIX + server.category.name, )
-////            server.category.name
-//        } else {
-//            throw IllegalArgumentException("The provided server has no image information")
-//        }
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    private fun prepareBaseImage(javaVersionTag: String): Boolean {
+        val imageName = BASE_IMAGE_PREFIX + "openjdk-" + javaVersionTag
+        logger.debug { "Checking if base image ($imageName) exists..." }
+        if(dockerClient.listImagesCmd().withImageNameFilter(imageName).exec().isEmpty()) { // Base image does not exist
+            logger.info { "Base image ($imageName) does not exist! Creating..." }
+            javaClass.getResourceAsStream("/BaseImage").use { dockerfileInputStream ->
+                ByteArrayOutputStream().use { outputStream ->
+                    TarArchiveOutputStream(outputStream).use {
+                        it.putArchiveEntry(TarArchiveEntry("Dockerfile"))
+                        it.write(dockerfileInputStream.readAllBytes())
+                        it.closeArchiveEntry()
+                        it.finish()
+                    }
+                    val response = dockerClient.createImageCmd(imageName, ByteArrayInputStream(outputStream.toByteArray())).exec()
+                    logger.info { "Base image created (${response.id})!" }
+                }
+            }
+        } else {
+            logger.debug { "Base image does already exist!" }
+        }
+        return true
     }
 
-    override suspend fun prepareImages(servers: List<Server>): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    private fun prepareImageForCategory(category: Category, rebuild: Boolean = false): Boolean {
+        val imageName = IMAGE_PREFIX + category.name
+        if(dockerClient.listImagesCmd().withImageNameFilter(imageName).exec().isEmpty() || rebuild) { // Image does not exist or rebuild was explicitly turned on
+            logger.info { "Image $imageName does not exist! Creating..." }
+            ByteArrayOutputStream().use { outputStream ->
+                logger.debug { "Copying resources into image..." }
+                val serverJarFile = File(category.paths.serverJarPath)
+                if(serverJarFile.exists() && serverJarFile.isFile) {
+                    TarArchiveOutputStream(outputStream).use {
+                        it.putArchiveEntry(TarArchiveEntry("Dockerfile"))
+                        // TODO read base image from category
+                        // TODO add ram parameters to start command
+                        // TODO add support for custom parameters to start command
+                        it.write(ImageUtils.createServerImage(BASE_IMAGE_PREFIX + "openjdk-11-slim", "java -jar server.jar").toByteArray())
+                        it.closeArchiveEntry()
+                        it.putArchiveEntry(it.createArchiveEntry(serverJarFile, "server.jar"))
+                        it.closeArchiveEntry()
+                        TarUtils.addDirectoryToTar(category.paths.worldsFolderPath, "worlds", it)
+                        TarUtils.addDirectoryToTar(category.paths.pluginsFolderPath, "plugins", it)
+                        TarUtils.addDirectoryToTar(category.paths.configsFolderPath, "configs", it)
+                        it.finish()
+                    }
+                    val response = dockerClient.createImageCmd(imageName, ByteArrayInputStream(outputStream.toByteArray())).exec()
+                    logger.info { "Image created (${response.id})!" }
+                } else {
+                    logger.error { "The server jar file does not exist! Can't create image [${category.paths.serverJarPath}]" }
+                    return false
+                }
+            }
+        } else {
+            logger.debug { "Image does already exist!" }
+        }
+        return true
+    }
+
+    private suspend fun prepareImageWithoutPreparingBase(server: Server): Boolean {
+        logger.debug { "Preparing image for ${server.name}..." }
+        if(server is CategorizedServer) {
+            return prepareImageForCategory(server.category)
+        } else {
+            throw NoImageInformationException()
+        }
+    }
+
+    override suspend fun prepareImage(server: Server): Boolean {
+        prepareBaseImage("11-slim") // TODO read from category
+        return prepareImageWithoutPreparingBase(server)
+    }
+
+    override suspend fun prepareImages(servers: List<Server>): Boolean = coroutineScope {
+        prepareBaseImage("11-slim") // TODO read from category
+        servers.distinctBy { (it as CategorizedServer).category }.map { async { prepareImageWithoutPreparingBase(it) } }.all { it.await() }
     }
 
     override suspend fun createServer(server: Server): Boolean {
