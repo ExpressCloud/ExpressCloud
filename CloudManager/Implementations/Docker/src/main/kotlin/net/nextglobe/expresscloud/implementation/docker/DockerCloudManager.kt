@@ -162,11 +162,23 @@ class DockerCloudManager : CloudManager {
         servers.distinctBy { (it as CategorizedServer).category }.map { async { prepareImageWithoutPreparingBase(it) } }.all { it.await() }
     }
 
-    override suspend fun createServer(server: Server): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    // TODO add rebuildImage(s)
+
+    private fun createContainer(imageName: String, name: String): String {
+        return dockerClient.createContainerCmd(imageName).withName(name).exec().id
     }
 
-    override suspend fun createServers(servers: List<Server>): Boolean {
+    private fun createContainerForCategory(category: Category, name: String): String {
+        return createContainer(IMAGE_PREFIX + category.name, name)
+    }
+
+    override suspend fun createServer(server: Server): String {
+        prepareImage(server)
+        // No typecheck needed as prepareImage already throws an exception if server is not of type CategorizedServer
+        return createContainerForCategory((server as CategorizedServer).category, CONTAINER_PREFIX + server.category.name.toLowerCase() + "-" + (if(server is CategoryServer) server.number else server.id))
+    }
+
+    override suspend fun createServers(servers: List<Server>): List<String> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
