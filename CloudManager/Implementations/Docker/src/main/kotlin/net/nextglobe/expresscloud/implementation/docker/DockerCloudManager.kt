@@ -1,7 +1,9 @@
 package net.nextglobe.expresscloud.implementation.docker
 
 import com.github.dockerjava.api.DockerClient
+import com.github.dockerjava.api.async.ResultCallback
 import com.github.dockerjava.api.command.DockerCmdExecFactory
+import com.github.dockerjava.api.model.Event
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
@@ -57,8 +59,11 @@ class DockerCloudManager : CloudManager {
     }
 
     override fun registerListeners() {
-//        dockerClient.eventsCmd().
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        dockerClient.eventsCmd().also { it.filters?.set("network", listOf(NETWORK_NAME)) }.exec(object : ResultCallback.Adapter<Event>() {
+            override fun onNext(event: Event) {
+                logger.debug { "ID: ${event.id} Action: ${event.action}" }
+            }
+        }).awaitStarted()
     }
 
     override fun disconnect() {
