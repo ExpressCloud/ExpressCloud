@@ -5,6 +5,6 @@ interface CategoryPaths {
     val serverJarPath : String
     val pluginsFolderPath : String
     val worldsFolderPath : String
-    val configFolderPath : String
+    val configsFolderPath : String
 
 }
