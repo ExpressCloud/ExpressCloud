@@ -43,14 +43,16 @@ interface CloudManager {
     /**
      * Used to create a server. For example, the docker implementation would
      * first call [prepareImage] and then a container would be created
-     * @return true if the creation was successful
+     * @return a path, an id, etc. For example, the docker implementation
+     * would return the id of the newly created container. The local implementation
+     * would return the path to the new jar location
      */
-    suspend fun createServer(server: Server) : Boolean
+    suspend fun createServer(server: Server) : String
 
     /**
      * See [createServer]
      */
-    suspend fun createServers(servers: List<Server>) : Boolean
+    suspend fun createServers(servers: List<Server>) : List<String>
 
 
     /**
