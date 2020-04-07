@@ -1,0 +1,3 @@
+FROM openjdk:11-slim
+
+CMD ["java", "-jar", "server.jar"]
