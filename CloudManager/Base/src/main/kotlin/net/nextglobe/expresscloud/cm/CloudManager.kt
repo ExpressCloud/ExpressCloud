@@ -55,7 +55,7 @@ interface CloudManager {
 
     /**
      * Used to start a server. For example, the docker implementation would
-     * first call [createServer] and then the created container would started
+     * first call [createServer] and then the created container would be started
      * @return true if the start was successful
      */
     suspend fun startServer(server: Server) : Boolean
