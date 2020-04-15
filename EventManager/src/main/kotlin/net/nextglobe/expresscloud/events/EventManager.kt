@@ -1,6 +1,7 @@
 package net.nextglobe.expresscloud.events
 
 import com.google.common.eventbus.EventBus
+import net.nextglobe.expresscloud.api.events.CloudEvent
 
 object EventManager {
 
@@ -15,7 +16,7 @@ object EventManager {
         bus.register(eventHandler)
     }
 
-    internal fun dispatchEvent(event: Any) {
+    internal fun dispatchEvent(event: CloudEvent) {
         bus.post(event)
     }
 

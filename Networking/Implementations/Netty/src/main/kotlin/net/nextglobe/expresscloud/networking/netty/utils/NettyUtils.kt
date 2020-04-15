@@ -1,4 +1,4 @@
-package net.nextglobe.expresscloud.networking.serialize.netty
+package net.nextglobe.expresscloud.networking.netty.utils
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
@@ -6,7 +6,7 @@ import java.util.UUID
 
 object NettyUtils {
 
-    fun newByteBuf() = Unpooled.buffer()
+    fun newByteBuf(): ByteBuf = Unpooled.buffer()
 
     fun writeString(buf: ByteBuf, s: String) {
         val bytes = s.toByteArray()

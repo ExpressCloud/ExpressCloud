@@ -1,6 +1,8 @@
 package net.nextglobe.expresscloud.events
 
-interface CloudEvent {
+import net.nextglobe.expresscloud.api.events.CloudEvent
+
+interface DispatchableCloudEvent : CloudEvent {
 
     fun dispatch() {
         EventManager.dispatchEvent(this)
