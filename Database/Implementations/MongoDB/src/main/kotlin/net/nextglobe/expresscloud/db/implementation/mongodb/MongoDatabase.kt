@@ -1,6 +1,5 @@
 package net.nextglobe.expresscloud.db.implementation.mongodb
 
-import com.google.common.net.PercentEscaper
 import net.nextglobe.expresscloud.db.Database
 import net.nextglobe.expresscloud.db.models.DatabaseCategory
 import net.nextglobe.expresscloud.db.models.DatabaseCloudConfig
@@ -10,9 +9,8 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.eq
 import org.litote.kmongo.reactivestreams.KMongo
+import java.net.URI
 import java.util.UUID
-
-private val escaper = PercentEscaper("-", false)
 
 class MongoDatabase : Database {
 
@@ -36,28 +34,14 @@ class MongoDatabase : Database {
         hostname: String?,
         port: Int?,
         authenticationDatabase: String?
-    ) = buildString {
-        append("mongodb://")
-
-        // User
-        if(!username.isNullOrBlank()) {
-            append(username)
-            if(!password.isNullOrBlank()) {
-                append(":${escaper.escape(password)}")
-            }
-            append("@")
-        }
-
-        // Host
-        append(if (hostname.isNullOrBlank()) "localhost" else hostname)
-
-        // Port
-        append(":${port ?: 27017}")
-
-        // Authentication database
-        if(!authenticationDatabase.isNullOrBlank())
-            append("/$authenticationDatabase")
-    }
+    ) = URI("mongodb",
+        if (username.isNullOrBlank()) null else if(password.isNullOrBlank()) username else "$username:$password",
+        if (hostname.isNullOrBlank()) "localhost" else hostname,
+        port ?: 27017,
+        if(authenticationDatabase.isNullOrBlank()) null else "/$authenticationDatabase",
+        null,
+        null
+    ).toString()
 
     override suspend fun getDatabaseCloudConfigs(): List<DatabaseCloudConfig> {
         return databaseCloudConfigsCollection.find().toList()
